@@ -7,5 +7,6 @@
 <body>
     <h1>Hello, World!</h1>
     <p>Welcome to the Java Maven Tomcat application.</p>
+    <p>Welcome to the DevOps Batch 18.</p>
 </body>
 </html>
