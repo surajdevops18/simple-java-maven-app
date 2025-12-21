@@ -6,6 +6,7 @@
 </head>
 <body>
     <h1>Hello, World!</h1>
+    <h1> Deploying Java Based Application using Jenkins Pipeline on EC2 </h1>
     <p>Welcome to the Java Maven Tomcat application.</p>
     <p>Welcome to the DevOps Batch 18.</p>
 </body>
