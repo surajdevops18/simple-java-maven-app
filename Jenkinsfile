@@ -2,7 +2,7 @@ pipeline {
   agent any
   options { skipDefaultCheckout true } // we control checkout inside sshagent
   environment {
-    GIT_CREDENTIALS     = 'github-ssh-key'     // SSH key credential for GitHub
+    GIT_CREDENTIALS     = 'Jenkins_github'     // SSH key credential for GitHub
     TOMCAT_DEV_CRED     = 'tomcat-ssh-dev'     // Jenkins credential id for dev host
     TOMCAT_PROD_CRED    = 'tomcat-ssh-prod'    // Jenkins credential id for prod host
     DEV_HOST            = '172.31.17.215'          // replace with your dev host IP/DNS
