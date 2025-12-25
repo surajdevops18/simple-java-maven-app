@@ -1,65 +1,44 @@
 pipeline {
     agent any
 
-    tools {
-        maven 'Maven_3.8.5' // This should match the name configured in Jenkins Global Tools
-        jdk 'JDK_11'        // This should also match Jenkins global tool name
-    }
-
     environment {
-        // Define any environment variables here if needed
-        APP_NAME = "MyJavaApp"
+        GIT_CREDENTIALS = 'github-ssh-key' // ID from Jenkins credentials
+       
     }
 
     stages {
         stage('Checkout') {
             steps {
-                echo "Checking out source code from branch: ${env.BRANCH_NAME}"
-                checkout scm
+                git branch: 'master',
+                    url: 'git@github.com:surajdevops18/simple-java-maven-app.git',
+                    credentialsId: "${env.GIT_CREDENTIALS}"
             }
         }
 
         stage('Build') {
             steps {
-                echo "Building the Java application with Maven..."
-                sh 'mvn clean compile'
+                sh 'mvn clean package'
             }
         }
-
-        stage('Unit Test') {
+        
+        stage('Deploy to Tomcat') {
             steps {
-                echo "Running unit tests..."
-                sh 'mvn test'
-            }
-        }
-
-        stage('Package') {
-            steps {
-                echo "Packaging the application..."
-                sh 'mvn package'
-            }
-        }
-
-        stage('Deploy to Dev') {
-            when {
-                branch 'main'
-            }
-            steps {
-                echo "Deploying ${APP_NAME} to the Dev environment..."
-                // Example: sh './scripts/deploy.sh dev'
+                sshagent(credentials: ['tomcat-ssh']){
+                    //scp -o strictHostKeyChecking=no target/maven-web-app.war ec2-user@172.31.44.111:/usr/local/tomcat/webapps/
+                    sh '''
+                    
+                    scp -o StrictHostKeyChecking=no target/*.war ec2-user@172.31.32.158:/tmp/
+                    ssh -o StrictHostKeyChecking=no ec2-user@172.31.32.158 'sudo mv /tmp/*.war /usr/local/tomcat/webapps/'
+					ssh -o StrictHostKeyChecking=no ec2-user@172.31.32.158 'sudo /usr/local/tomcat/bin/startup.sh'
+                    '''
+                }
             }
         }
     }
 
     post {
         always {
-            echo "Pipeline completed for branch: ${env.BRANCH_NAME}"
-        }
-        success {
-            echo "Pipeline succeeded ✅"
-        }
-        failure {
-            echo "Pipeline failed ❌"
+            junit 'target/surefire-reports/*.xml'
         }
     }
 }
