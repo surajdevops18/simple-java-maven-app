@@ -5,8 +5,8 @@ pipeline {
     GIT_CREDENTIALS     = 'github-ssh-key'     // SSH key credential for GitHub
     TOMCAT_DEV_CRED     = 'tomcat-ssh-dev'     // Jenkins credential id for dev host
     TOMCAT_PROD_CRED    = 'tomcat-ssh-prod'    // Jenkins credential id for prod host
-    DEV_HOST            = '10.0.1.10'          // replace with your dev host IP/DNS
-    PROD_HOST           = '16.171.140.60'      // replace with your prod host IP/DNS
+    DEV_HOST            = '172.31.17.215'          // replace with your dev host IP/DNS
+    PROD_HOST           = '172.31.32.158'      // replace with your prod host IP/DNS
   }
 
   stages {
