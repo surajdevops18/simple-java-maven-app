@@ -27,9 +27,9 @@ pipeline {
                     //scp -o strictHostKeyChecking=no target/maven-web-app.war ec2-user@172.31.44.111:/usr/local/tomcat/webapps/
                     sh '''
                     
-                    scp -o StrictHostKeyChecking=no target/*.war ec2-user@172.31.32.158:/tmp/
-                    ssh -o StrictHostKeyChecking=no ec2-user@172.31.32.158 'sudo mv /tmp/*.war /usr/local/tomcat/webapps/'
-					ssh -o StrictHostKeyChecking=no ec2-user@172.31.32.158 'sudo /usr/local/tomcat/bin/startup.sh'
+                    scp -o StrictHostKeyChecking=no target/*.war ec2-user@172.31.17.215:/tmp/
+                    ssh -o StrictHostKeyChecking=no ec2-user@172.31.17.215 'sudo mv /tmp/*.war /usr/local/tomcat/webapps/'
+					ssh -o StrictHostKeyChecking=no ec2-user@172.31.17.215 'sudo /usr/local/tomcat/bin/startup.sh'
                     '''
                 }
             }
