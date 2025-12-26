@@ -1,75 +1,84 @@
 pipeline {
-  agent any
-  options { skipDefaultCheckout true } // we control checkout inside sshagent
-  environment {
-    GIT_CREDENTIALS     = 'Jenkins_github'     // SSH key credential for GitHub
-    TOMCAT_DEV_CRED     = 'tomcat-ssh-dev'     // Jenkins credential id for dev host
-    TOMCAT_PROD_CRED    = 'tomcat-ssh-prod'    // Jenkins credential id for prod host
-    DEV_HOST            = '172.31.17.215'          // replace with your dev host IP/DNS
-    PROD_HOST           = '172.31.32.158'      // replace with your prod host IP/DNS
-  }
 
-  stages {
-    stage('Checkout') {
-      steps {
-        // Inject SSH key for Git checkout (works in multibranch pipeline)
-        sshagent (credentials: [env.GIT_CREDENTIALS]) {
-          checkout scm
+    agent {
+        node {
+            label 'master_node'
         }
-      }
     }
 
-    stage('Build') {
-      steps {
-        script {
-          if (isUnix()) {
-            sh 'mvn -B -DskipTests package'
-          } else {
-            bat 'mvn -B -DskipTests package'
-          }
-        }
-      }
-    }
+    
 
-    stage('Test') {
-      when { branch 'dev' } // run tests only on dev branch (example)
-      steps {
-        script {
-          if (isUnix()) { sh 'mvn test' } else { bat 'mvn test' }
-        }
-      }
-    }
-
-    stage('Deploy') {
-      when { anyOf { branch 'dev'; branch 'main' } }
-      steps {
-        script {
-          if (env.BRANCH_NAME == 'main') {
-            // Deploy to production
-            sshagent (credentials: [env.TOMCAT_PROD_CRED]) {
-              sh """
-                scp -o StrictHostKeyChecking=yes target/*.war ec2-user@${env.PROD_HOST}:/tmp/
-                ssh -o StrictHostKeyChecking=yes ec2-user@${env.PROD_HOST} 'sudo mv /tmp/*.war /usr/local/tomcat/webapps/ && sudo $CATALINA_HOME/bin/startup.sh'
-              """
+    stages {
+        
+        stage('Cleanup Workspace') {
+            steps {
+                cleanWs()
+                sh """
+                echo "Cleaned Up Workspace For Project"
+                """
             }
-          } else {
-            // Deploy to dev
-            sshagent (credentials: [env.TOMCAT_DEV_CRED]) {
-              sh """
-                scp -o StrictHostKeyChecking=yes target/*.war ec2-user@${env.DEV_HOST}:/tmp/
-                ssh -o StrictHostKeyChecking=yes ec2-user@${env.DEV_HOST} 'sudo mv /tmp/*.war /usr/local/tomcat/webapps/ && sudo $CATALINA_HOME/bin/startup.sh'
-              """
-            }
-          }
         }
-      }
-    }
-  }
 
-  post {
-    always {
-      junit 'target/surefire-reports/*.xml'
-      archiveArtifacts artifacts: 'target/*.war', fingerprint: true
-    }
-  }
+        stage('Code Checkout') {
+            steps {
+                checkout([
+                    $class: 'GitSCM', 
+                    branches: [[name: '*/master']], 
+                    userRemoteConfigs: [[url: 'https://github.com/surajdevops18/simple-java-maven-app.git']]
+                ])
+            }
+        }
+
+        stage('Unit Testing') {
+            steps {
+                sh """
+                echo "Running Unit Tests"
+                """
+            }
+        }
+
+        stage('Code Analysis') {
+            steps {
+                sh """
+                echo "Running Code Analysis"
+                """
+            }
+        }
+
+        stage('Deploy To Dev & QA') {
+            when {
+                branch 'develop'
+            }
+            steps {
+                sh """
+                echo "Building Artifact for Dev Environment"
+                """
+                sh """
+                echo "Deploying to Dev Environment"
+                """
+                sh """
+                echo "Deploying to QA Environment"
+                """
+            }
+        }
+
+        stage('Deploy To Staging and Pre-Prod Code') {
+            when {
+                branch 'main'
+            }
+            steps {
+                sh """
+                echo "Building Artifact for Staging and Pre-Prod Environments"
+                """
+                sh """
+                echo "Deploying to Staging Environment"
+                """
+                sh """
+                echo "Deploying to Pre-Prod Environment"
+                """
+            }
+        }
+
+    }   
 }
+        
