@@ -6,6 +6,11 @@ pipeline {
         }
     }
 
+    environment {
+        GIT_CREDENTIALS = 'github-ssh-key' // ID from Jenkins credentials
+       
+    }
+
     
 
     stages {
@@ -23,8 +28,9 @@ pipeline {
             steps {
                 checkout([
                     $class: 'GitSCM', 
-                    branches: [[name: '*/master']], 
-                    userRemoteConfigs: [[url: 'https://github.com/surajdevops18/simple-java-maven-app.git']]
+                    git branch: 'master',
+                    url: 'git@github.com:surajdevops18/simple-java-maven-app.git',
+                    credentialsId: "${env.GIT_CREDENTIALS}"
                 ])
             }
         }
