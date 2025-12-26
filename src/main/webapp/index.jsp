@@ -10,6 +10,6 @@
     <p>Welcome to the Java Maven Tomcat application.</p>
     <p>Welcome to NewGen Software</p>
     <p>Welcome to the DevOps Batch 18.</p>
-	<p>Happy New Year - 2026 !!!</p>
+	<h1>Happy New Year - 2026 !!!</h1>
 </body>
 </html>
