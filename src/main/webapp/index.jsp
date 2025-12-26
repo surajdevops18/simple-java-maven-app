@@ -12,5 +12,6 @@
     <p>Welcome to the DevOps Batch 18.</p>
 	<h1>Happy New Year - 2026 !!!</h1>
 	<h1>Happy New Year - 2026 !!!</h1>
+	<h1>Happy New Year - 2026 !!!</h1>
 </body>
 </html>
