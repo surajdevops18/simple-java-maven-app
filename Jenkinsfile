@@ -1,90 +1,44 @@
 pipeline {
-
-    agent {
-        node {
-            label 'master_node'
-        }
-    }
+    agent any
 
     environment {
         GIT_CREDENTIALS = 'github-ssh-key' // ID from Jenkins credentials
        
     }
 
-    
-
     stages {
-        
-        stage('Cleanup Workspace') {
+        stage('Checkout') {
             steps {
-                cleanWs()
-                sh """
-                echo "Cleaned Up Workspace For Project"
-                """
-            }
-        }
-
-        stage('Code Checkout') {
-            steps {
-                checkout([
-                    $class: 'GitSCM', 
-                    git branch: 'master',
+                git branch: 'master',
                     url: 'git@github.com:surajdevops18/simple-java-maven-app.git',
                     credentialsId: "${env.GIT_CREDENTIALS}"
-                ])
             }
         }
 
-        stage('Unit Testing') {
+        stage('Build') {
             steps {
-                sh """
-                echo "Running Unit Tests"
-                """
+                sh 'mvn clean package'
             }
         }
-
-        stage('Code Analysis') {
-            steps {
-                sh """
-                echo "Running Code Analysis"
-                """
-            }
-        }
-
-        stage('Deploy To Dev & QA') {
-            when {
-                branch 'develop'
-            }
-            steps {
-                sh """
-                echo "Building Artifact for Dev Environment"
-                """
-                sh """
-                echo "Deploying to Dev Environment"
-                """
-                sh """
-                echo "Deploying to QA Environment"
-                """
-            }
-        }
-
-        stage('Deploy To Staging and Pre-Prod Code') {
-            when {
-                branch 'main'
-            }
-            steps {
-                sh """
-                echo "Building Artifact for Staging and Pre-Prod Environments"
-                """
-                sh """
-                echo "Deploying to Staging Environment"
-                """
-                sh """
-                echo "Deploying to Pre-Prod Environment"
-                """
-            }
-        }
-
-    }   
-}
         
+        stage('Deploy to Tomcat') {
+            steps {
+                sshagent(credentials: ['tomcat-ssh']){
+                    //scp -o strictHostKeyChecking=no target/maven-web-app.war ec2-user@172.31.44.111:/usr/local/tomcat/webapps/
+                    sh '''
+                    
+                    scp -o StrictHostKeyChecking=no target/*.war ec2-user@172.31.32.158:/tmp/
+                    ssh -o StrictHostKeyChecking=no ec2-user@172.31.32.158 'sudo mv /tmp/*.war /usr/local/tomcat/webapps/'
+					ssh -o StrictHostKeyChecking=no ec2-user@172.31.32.158 'sudo /usr/local/tomcat/bin/startup.sh'
+                    '''
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            junit 'target/surefire-reports/*.xml'
+        }
+    }
+}
